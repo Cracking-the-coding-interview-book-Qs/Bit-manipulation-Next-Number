@@ -1,4 +1,4 @@
-//test for powers of 2
+//test for 1110  jinme last me sirf ek hi zero ho
 //test for 1110111
 
 #include<iostream>
@@ -6,15 +6,14 @@
 
 using namespace std;
 
-//global variables
-int a=1,index=0,n_preserved;
-
 //utilities
 
 //converts decimal to binary
 void Dec2Bin(int n)                                                        
 {
-	n=n_preserved;
+	//prevent original n from getting modified
+	int n_preserved=n;
+	
 	//Used Bitwise operators bcoz they are faster than arithmetic operators
 	//it can also be done by using arrays but it consumes extra space
 	
@@ -22,7 +21,7 @@ void Dec2Bin(int n)
 	for(int i=31;i>=0;i--)
 	{
 		//traversing n bitwise
-		int k=n>>i;
+		int k=n_preserved>>i;
 		if(k&1)
 		{
 			cout<<"1";
@@ -37,17 +36,19 @@ void Dec2Bin(int n)
 
 //checks if a n is power of 2, returns 1 if it is
 int isPowerOf2(int n)
-{
-		n=n_preserved;
+{ 
+		//prevent original n from getting modified
+		int n_preserved=n;
+		
 		//corner case. Log() ke andar no 0 and negative
-		if(n==0)
+		if(n_preserved==0)
 		{
 			return 0;
 		}
 		else
 		{
 			//returns only if the condition holds
-			if(ceil(log2(n))==(floor(log2(n))))
+			if(ceil(log2(n_preserved))==(floor(log2(n_preserved))))
 			{
 				return 1;	
 			}
@@ -57,7 +58,9 @@ int isPowerOf2(int n)
 //It clears bits between [i,j] included
 int ClearBits(int n,int i,int j)
 {
-	n=n_preserved;
+	//prevent original n from getting modified
+	int n_preserved=n;
+	
 	//I am using masking
 	int allones=~0;  //if assumed 8 bits its equal to 11111111
 	
@@ -68,16 +71,20 @@ int ClearBits(int n,int i,int j)
 	int mask=leftmask|rightmask;   //we get 11100011
 	
 	//now its time to clear n. we use Bitwise AND here to preserve all the bits other than [i,j]
-	int n_cleared=(n & mask);
+	int n_cleared=(n_preserved & mask);
+	Dec2Bin(n_cleared);
 	
 	return n_cleared;
 }
 
 //gives number of bits in the input number
-int countBits(int n)
+int countBits(int n)						
 {
-	n=n_preserved;
+	//prevent original n from getting modified
+	int n_preserved=n;
+		
 	int count=0;
+	
 	while(n_preserved!=0)	
 	{
 		n_preserved=n_preserved>>1;
@@ -88,66 +95,84 @@ int countBits(int n)
 
 int NextSmallest(int n,int count)
 {
-	n=n_preserved;
-	cout<<"\nInput number => ";
-	Dec2Bin(n);
+	//prevent original n from getting modified
+	int n_preserved=n;
+	
+	int index=0;
+
 	
 	int count_preserved=count;
-	//bring a below the leftmost bit   like 100000..00
-	a=a<<(count_preserved-1);
-	cout<<"\na after shifting leftmost => ";
-	Dec2Bin(a);
 	
-	//traverse from leftmost bit towards right by one bit till the last 1 bit is encountered
-	while((a&1)==1 && ((a=a>>1) & 0)!=0)
+	//bring a below the leftmost bit   like 100000..00
+
+	int a=1<<(count_preserved-1);
+	
+	//traverse from leftmost bit of n towards right by one bit till the last 1 bit of n is encountered
+	while((a & n_preserved))  
 	{
-		a>>=1;
 		index++;
+		a=a>>1;                            //a shifts one time extra so dont shift it again when while loop breaks
 	}
-	cout<<"\nIndex from left where rightmost 1 is there =>"<<index;
 	
 	//after getting last 1 bit and its index, clear the rightmost 1
-	ClearBits(n,count-index,count-index);
-	cout<<"\nn after clearing bits at index => ";
-	Dec2Bin(n);
+	int n_cleared=ClearBits(n_preserved,count-index,count-index);
 	
-	//make the bit just after it (which is definitely 0) 1
-	a>>=1;
-	cout<<"\na after shifting right by 1 bit => ";
-	Dec2Bin(a);
-	
-	n=(n|a);
-	
-	cout<<"\nFinal n jo next smallest() mese niklega => ";
-	Dec2Bin(n);
-	
-	return n;
+	n_cleared=(n_cleared|a);
+	cout<<"\n";
+	Dec2Bin(n_cleared);
+		
+	return n_cleared;
 }
 
 int NextLargest(int n)
 {
-	n=n_preserved;
+	int index=0;
+	//prevent original n from getting modified
+	int n_preserved=n;
 	
-	return n;
+	int a=1;
+	
+	//traverse from rightmost bit of n towards right by one bit till the last 1 bit of n is encountered
+	while((a & n_preserved))  
+	{
+		index++;
+		a=a<<1;                            //a shifts one time extra so dont shift it again when while loop breaks
+	}
+	
+	//after getting last 1 bit and its index, clear the rightmost 1
+	int n_cleared=ClearBits(n_preserved,index,index);
+	
+	n_cleared=(n_cleared|a);
+	cout<<"\n";
+	Dec2Bin(n_cleared);
+		
+	return n_cleared;
 }
 
 int main()
 {
 	int n;
-	cout<<"\nEnter your number (n)";
+	cout<<"\nEnter your number (n) => ";
 	cin>>n;
-	n_preserved=n;
-	cout<<"\nn_preserved => ";
-	Dec2Bin(n_preserved);
-	
-	int flag=isPowerOf2(n);
+	cout<<"\n";
+	Dec2Bin(n);
 
-	
 	//getting no. of bits in n
 	int count=countBits(n);
 	
+	int flag=isPowerOf2(n);
+	
+	//checking if all bits are 1
+	int index=0,a=1;
+	a=a<<(count-1);
+	while((a & n))  
+	{
+		index++;
+		a=a>>1;                            //a shifts one time extra so dont shift it again when while loop breaks
+	}
+		
 	//checking for all corner cases possible
-	if(n==~1 && count<=32)                 //its of type 0000..000 and within 32 bit range
+	if(n==0)                 //its of type 0000..000 and within 32 bit range
 	{
 		cout<<"\nNext smallest and next largest number with same 1 bits other than n is not possible";
 		return 0;
@@ -156,21 +181,31 @@ int main()
 	{
 		cout<<"\nNegative numbers aren't allowed!";
 	}
-	else if(n==~0 && count<=32)          //its of type 1111...111 and within 32 bit range
+	else if(index==count && count<=32)          //its of type 1111...111 and within 32 bit range
 	{
 		//next smallest is not possible
-		cout<<"\nNext smallest number is not possible!";
-		//To get next largest number,Left most bit ko ek se sarkhao left me and return the number 
-		cout<<"\nNext largest number => "<<NextLargest(n);
+		cout<<"\nNext smallest number with same number of 1 bits is not possible!";
+		
+		//To get next largest number,Left shift karo number ko by 1 
+		n<<=1;
+		cout<<"\nNext largest number => "<<n;
 	}
 	else if(flag==1)                 //It includes powers of 2 i.e numbers with exactly 1 bit
 	{
 		//next largest
+		//To get next largest number,Left shift karo number ko by 1 
+		n<<=1;
+		cout<<"\nNext largest number => "<<n;
+		
+		//next smallest
+		//To get next smallest number,Left shift karo number ko by 1 (i did by 2 kyuki upar already ek baar shift jyada hua)
+		n>>=2;
+		cout<<"\nNext largest number => "<<n;
 		
 	}
 	else //aise saare cases jisme atleast ek 0 bit ho and saare 0 bit naa ho.It dosen't include powers of 2
 	{
-		//cout<<"\nNext largest number => "<<NextLargest(n);
+		cout<<"\nNext largest number => "<<NextLargest(n);
 		cout<<"\nNext smallest number => "<<NextSmallest(n,count);
 	}
 	
